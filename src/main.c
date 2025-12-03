@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ktakamat <ktakamat@student.42.fr>          +#+  +:+       +#+        */
+/*   By: machi <machi@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 17:10:43 by ktakamat          #+#    #+#             */
-/*   Updated: 2025/11/25 19:48:50 by ktakamat         ###   ########.fr       */
+/*   Updated: 2025/12/02 14:09:03 by machi            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ static void	free_ptr(void) {
 	    ft_free((void **)&g.p->req->ip_header);
 	ft_free((void **)&g.p->req);
     if (g.p->resp)
-	f   t_free((void **)&g.p->resp->ip_header);
+	ft_free((void **)&g.p->resp->ip_header);
 	ft_free((void **)&g.p->resp);
 	ft_free((void **)&g.p);
 }
@@ -57,3 +57,12 @@ int main(const int argc, char **argv) {
     ping(&args);
     return EXIT_SUCCESS;
 }
+
+
+
+// 全体の流れ
+// 起動(main):プログラムが始まる
+// 解読(parser):ユーザーの注文(宛先やオプション)を開く
+// 開通(socket):通信回線を開く
+// 実行(ping):実際にパケットを投げて、返事を待つ(無限ループ)
+// 終了:結果を表示して終わる
