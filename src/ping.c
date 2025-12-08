@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ping.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ktakamat <ktakamat@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/12/03 13:06:38 by ktakamat          #+#    #+#             */
+/*   Updated: 2025/12/08 18:47:30 by ktakamat         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "ft_ping.h"
 
 // 統計情報の更新(最小、　最大、　平均、標準偏差用)
@@ -61,6 +73,8 @@ static void	run(const t_sock *socks, const t_args *args,
 }
 
 // ホスト名解決
+// 役割: ユーザーが入力した "google.com" を、インターネット上の住所である "142.250.xxx.xxx" に変換します。
+// 重要: これが成功しないと、どこにパケットを投げていいかわかりません。
 static void resolve_host(struct sockaddr_in *dst_ip, const t_args *args) {
 	struct addrinfo hints, *res;
 	int status;
@@ -79,6 +93,42 @@ static void resolve_host(struct sockaddr_in *dst_ip, const t_args *args) {
 	memcpy(dst_ip, res->ai_addr, sizeof(struct sockaddr_in));
 
 	// IPアドレスを文字列として統計情報に保存しておく
-	inet_ntop(AF_INET, &dst_ip->sin_addr, g.s)
+	inet_ntop(AF_INET, &dst_ip->sin_addr, g.s.host, sizeof(g.s.host));
+	
+	freeaddrinfo(res);
 }
 
+void ping(const t_args *args) {
+	t_stock *socks;
+	struct sockaddr_in dst_ip;
+	struct timeval start_all, now;
+	bool init = true;
+
+	//名前解決
+	resolve_host(&dst_ip, args);
+	
+	//ソケット作成
+	socks = get_socket(args);
+	g.p->socks = socks;
+
+	gettimeofday(&start_all. NULL);
+	
+	//無限ループ
+	while (true) {
+		if (args->options.timeout.set) {
+			gettimeofday(&now, NULL);
+			double elapsed = (now.tv_sec - start_all.tv_sec) +
+					(now.tv_usec - start_all.tv_usec) / 1e6;
+			if (elapsed >= args->options.timeout.val) {
+				log_stats();
+				break;
+			}
+		}
+		
+		run(socks, args, &dst_ip, init);
+		init = false;
+	}
+
+	close(socks->send_fd);
+	close(socks->recv_fd);
+}
