@@ -6,7 +6,7 @@
 /*   By: ktakamat <ktakamat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/03 13:06:38 by ktakamat          #+#    #+#             */
-/*   Updated: 2025/12/08 18:47:30 by ktakamat         ###   ########.fr       */
+/*   Updated: 2025/12/08 19:13:47 by ktakamat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,11 @@ static void resolve_host(struct sockaddr_in *dst_ip, const t_args *args) {
 	freeaddrinfo(res);
 }
 
+//全体の監督
+//無限ループを回し続ける
+//処理:1.住所を調べる。2.ソケット（通信の扉）を開く 3.ループを開始
+// 4.「時間制限ーｗは来てないか？」を確認 5.部下のrunに「一回行ってこい！」と指示
+// 6.Ctrl+Cが押されるまでこれを繰り返す
 void ping(const t_args *args) {
 	t_stock *socks;
 	struct sockaddr_in dst_ip;
@@ -132,3 +137,11 @@ void ping(const t_args *args) {
 	close(socks->send_fd);
 	close(socks->recv_fd);
 }
+//run(現場作業員)
+//役割:実際に一回分のpingを打つ作業員です
+//処理:1.作成：送るパケット（データ）を作る（set_req_packet)
+//2.送信:パケットを投げる(send_packet)同時にストップウォッチを押す。
+//3.受信:返事を来るのを待つ(recv_packet)
+//4.計算:返事が来たら、かかった時間（RTT)を計算する。
+//5.記録:「今の記録は〇〇ｍｓでした」とノートに書く（set_rtt_stats)
+//6.休憩:次の１秒が来るまで休む(usleep)
