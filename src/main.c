@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: machi <machi@student.42.fr>                +#+  +:+       +#+        */
+/*   By: ktakamat <ktakamat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 17:10:43 by ktakamat          #+#    #+#             */
-/*   Updated: 2025/12/02 14:09:03 by machi            ###   ########.fr       */
+/*   Updated: 2025/12/15 19:18:33 by ktakamat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,6 @@ int main(const int argc, char **argv) {
     ping(&args);
     return EXIT_SUCCESS;
 }
-
 
 
 // 全体の流れ

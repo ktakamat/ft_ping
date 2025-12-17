@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   logger.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: machi <machi@student.42.fr>                +#+  +:+       +#+        */
+/*   By: ktakamat <ktakamat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/08 18:47:54 by ktakamat          #+#    #+#             */
-/*   Updated: 2025/12/12 11:36:37 by machi            ###   ########.fr       */
+/*   Updated: 2025/12/12 14:24:38 by ktakamat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,7 +171,7 @@ void logger(char *msg, const int level, const bool to_exit, const int exit_code)
     int fd;
 
     switch (level) {
-        case DEBUG:   fd = STDOUT_FILENO; break; // デバッグ用
+        case DEBUG:   fd = STDOUT_FILENO; break;
         case INFO:    fd = STDOUT_FILENO; break;
         case WARNING: fd = STDERR_FILENO; break;
         case ERROR:   fd = STDERR_FILENO; break;
