@@ -6,11 +6,10 @@
 /*   By: ktakamat <ktakamat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/12 14:16:52 by ktakamat          #+#    #+#             */
-/*   Updated: 2025/12/12 14:16:53 by ktakamat         ###   ########.fr       */
+/*   Updated: 2025/12/19 15:41:43 by ktakamat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>

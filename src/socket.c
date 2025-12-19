@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   socket.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: machi <machi@student.42.fr>                +#+  +:+       +#+        */
+/*   By: ktakamat <ktakamat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 19:29:09 by ktakamat          #+#    #+#             */
-/*   Updated: 2025/12/02 16:01:25 by machi            ###   ########.fr       */
+/*   Updated: 2025/12/19 14:55:34 by ktakamat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,49 +54,51 @@
 // 意味: 「ルーティングテーブル（道案内）を無視する」。
 // 役割: 通常、パケットはルーターという案内役を経由して遠くへ運ばれますが、これをONにすると「ルーターを無視して、直接ケーブルで繋がっている相手に送りつける」という挙動になります。-r オプション用です。
 
+#include "ft_ping.h"
+
 t_sock *get_socket(const t_args *args)
 {
-	t_sock *socks;
-	struct timeval to;
-	int on;
+    t_sock *socks;
+    struct timeval to;
+    int on;
 
-	on = 1;
+    on = 1;
 
-	// タイムアウト設定
-	// floodモード(-f)のときは待機時間をゼロにして高速連射する
-	// 通常時は 0.1秒 (100000マイクロ秒) 待つ設定になっています
-	to.tv_sec = 0;
-	to.tv_usec = args->options.flood ? 0 : 100000;
+    // タイムアウト設定
+    // floodモード(-f)のときは待機時間をゼロにして高速連射する
+    // 通常時は 0.1秒 (100000マイクロ秒) 待つ設定になっています
+    to.tv_sec = 0;
+    to.tv_usec = args->options.flood ? 0 : 100000;
 
-	// 構造体のメモリ確保
-	if (!(socks = calloc(1, sizeof(t_sock))))
-		logger(LOG_CALLOC_FAIL, ERROR, true, 1);
+    // 構造体のメモリ確保
+    if (!(socks = calloc(1, sizeof(t_sock))))
+        logger(LOG_CALLOC_FAIL, ERROR, true, 1);
 
-	// 【送信ソケット】: IPPROTO_RAW (生のIPパケットを送る)
-	if ((socks->send_fd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) == -1)
-		logger("ping: socket failed\n", ERROR, true, 1);
+    // 【送信ソケット】: IPPROTO_RAW (生のIPパケットを送る)
+    // 修正: socket() 関数呼び出しを追加
+    if ((socks->send_fd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) == -1)
+        logger("ping: socket send_fd failed\n", ERROR, true, 1);
 
-	// 【受信ソケット】: IPPROTO_ICMP (ICMPパケットを受け取る)
-	if ((socks->recv_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) == -1)
-		logger("ping: socket failed\n", ERROR, true, 1);
+    // 【受信ソケット】: IPPROTO_ICMP (ICMPパケットを受け取る)
+    if ((socks->recv_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) == -1)
+        logger("ping: socket recv_fd failed\n", ERROR, true, 1);
 
-	// 受信タイムアウトの設定
-	if (setsockopt(socks->recv_fd, SOL_SOCKET, SO_RCVTIMEO, &to, sizeof(to)) == -1)
-		logger("ping: setsockopt SO_RCVTIMEO failed\n", ERROR, true, 1);
+    // 受信タイムアウトの設定
+    if (setsockopt(socks->recv_fd, SOL_SOCKET, SO_RCVTIMEO, &to, sizeof(to)) == -1)
+        logger("ping: setsockopt SO_RCVTIMEO failed\n", ERROR, true, 1);
 
-	// 【重要】IP_HDRINCL: IPヘッダを自分で作成するオプションを有効化
-	if (setsockopt(socks->send_fd, IPPROTO_IP, IP_HDRINCL, &on, sizeof(on)) == -1)
-		logger("ping: setsockopt IP_HDRINCL failed\n", ERROR, true, 1);
+    // 【重要】IP_HDRINCL: IPヘッダを自分で作成するオプションを有効化
+    if (setsockopt(socks->send_fd, IPPROTO_IP, IP_HDRINCL, &on, sizeof(on)) == -1)
+        logger("ping: setsockopt IP_HDRINCL failed\n", ERROR, true, 1);
 
-	// -r オプション: ルーティングテーブルを無視して直接ホストに送る
-	if (args->options.ignore_routing) {
-		if (setsockopt(socks->send_fd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof(on)) == -1)
-			logger("ping: setsockopt SO_DONTROUTE failed\n", ERROR, true, 1);
-	}
+    // -r オプション: ルーティングテーブルを無視して直接ホストに送る
+    if (args->options.ignore_routing) {
+        if (setsockopt(socks->send_fd, SOL_SOCKET, SO_DONTROUTE, &on, sizeof(on)) == -1)
+            logger("ping: setsockopt SO_DONTROUTE failed\n", ERROR, true, 1);
+    }
 
-	return socks;
+    return socks;
 }
-
 // 送信と受信でソケット分ける
 // send_fd(送信):IPPROTO_RAWを使用
 // recv_fd(受信):IPPROTO_ICMPを使用

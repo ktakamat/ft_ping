@@ -6,14 +6,14 @@
 #    By: ktakamat <ktakamat@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/11/24 16:45:31 by ktakamat          #+#    #+#              #
-#    Updated: 2025/11/25 16:56:33 by ktakamat         ###   ########.fr        #
+#    Updated: 2025/12/19 15:35:41 by ktakamat         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 
 NAME        = ft_ping
 CC          = cc
-CFLAGS      = -Wall -Wextra -Werror -I./include -g
+CFLAGS      = -Wall -Wextra -Werror -I./include -g -D_GNU_SOURCE
 
 # ソースディレクトリ
 SRC_DIR     = src
@@ -21,6 +21,7 @@ OBJ_DIR     = obj
 LIBFT_DIR   = src/libft
 
 # ソースファイル一覧
+# 修正: ft_calloc.c を追加し、使っていないファイルを削除しました
 SRCS        = $(SRC_DIR)/main.c \
               $(SRC_DIR)/parser.c \
               $(SRC_DIR)/socket.c \
@@ -29,10 +30,10 @@ SRCS        = $(SRC_DIR)/main.c \
               $(SRC_DIR)/logger.c \
               $(SRC_DIR)/verbose.c \
               $(LIBFT_DIR)/ft_free.c \
-              $(LIBFT_DIR)/ft_int_len.c \
-              $(LIBFT_DIR)/ft_str_realloc.c \
-              $(LIBFT_DIR)/ft_strf.c
+              $(LIBFT_DIR)/ft_strf.c \
+              $(LIBFT_DIR)/ft_calloc.c
 
+# オブジェクトファイル生成 (src/libft/xxx.c -> obj/libft/xxx.o に対応)
 OBJS        = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
 all: $(NAME)
@@ -40,6 +41,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) $(OBJS) -lm -o $(NAME)
 
+# ディレクトリ構造を維持してコンパイル
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@

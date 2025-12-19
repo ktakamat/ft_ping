@@ -3,21 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   parser.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: machi <machi@student.42.fr>                +#+  +:+       +#+        */
+/*   By: ktakamat <ktakamat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 19:29:03 by ktakamat          #+#    #+#             */
-/*   Updated: 2025/11/27 16:13:21 by machi            ###   ########.fr       */
+/*   Updated: 2025/12/19 15:43:58 by ktakamat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_ping.h"
-
-//オプションが足りない場合のエラー表示
-// ft_ping -wとだけ打ったときに呼び出される
-void	log_mis_opt_arg(const char *raw) {
-	fprintf(stderr, LOG_REQ_ARG2, raw);
-	logger(LOG_TRY, INFO, true, 64);
-}
 
 //値を取得するヘルパー関数　-ttl=64の場合は'='の後ろを、-ttl 64の場合は次の引数を返す。
 static char	*get_value(char **raw, size_t *i, bool has_eq) {
@@ -25,7 +18,7 @@ static char	*get_value(char **raw, size_t *i, bool has_eq) {
 		return (strchr(raw[*i], '=') + 1);
 	else {
 		if (!raw[*i + 1])
-			log_mis_opt_arg(raw[*i])
+			log_mis_opt_arg(raw[*i]);
 		(*i)++;
 		return (raw[*i]);
 	}
@@ -38,7 +31,7 @@ static void	set_opt_with_value(t_args *args, char **raw,
 		bool	has_eq  = (strchr(raw[*i], '=') != NULL);
 		char	*val_str = get_value(raw, i, has_eq);
 		int		val = atoi(val_str);
-		
+
 		if (!strcmp(opt_name, "timeout")) {
 			args->options.timeout.set = true;
 			args->options.timeout.val = val;
@@ -71,7 +64,7 @@ static void	info_options(const char *opt) {
 static bool is_opt(const char *input, const char *target) {
 	size_t len = strlen(target);
 
-	if (strncmp(input, target, len) = 0) {
+	if (strncmp(input, target, len) == 0) {
 		if (input[len] == '\0' || input[len] == '=')
 			return (true);
 	}

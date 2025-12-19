@@ -6,7 +6,7 @@
 /*   By: ktakamat <ktakamat@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/25 17:10:43 by ktakamat          #+#    #+#             */
-/*   Updated: 2025/12/15 19:18:33 by ktakamat         ###   ########.fr       */
+/*   Updated: 2025/12/19 15:41:23 by ktakamat         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,30 @@
 
 t_g g;
 
-static void	free_ptr(void) {
-    if (!g.p) return;
-	ft_free((void **)&g.p->socks);
-    if (g.p->req)
-	    ft_free((void **)&g.p->req->ip_header);
-	ft_free((void **)&g.p->req);
-    if (g.p->resp)
-	ft_free((void **)&g.p->resp->ip_header);
-	ft_free((void **)&g.p->resp);
-	ft_free((void **)&g.p);
+static void free_ptr(void) {
+    if (!g.p)
+        return;
+
+    // ソケット構造体の解放
+    ft_free((void **)&g.p->socks);
+
+    // 送信パケット構造体の解放
+    if (g.p->req) {
+        ft_free((void **)&g.p->req->ip_header);
+        ft_free((void **)&g.p->req->icmp_pkt);
+    }
+    ft_free((void **)&g.p->req);
+
+    // 受信パケット構造体の解放
+    if (g.p->resp) {
+        ft_free((void **)&g.p->resp->ip_header);
+        if (g.p->resp->icmp_pkt)
+            ft_free((void **)&g.p->resp->icmp_pkt);
+    }
+    ft_free((void **)&g.p->resp);
+
+    // 管理構造体の解放
+    ft_free((void **)&g.p);
 }
 
 static void sigint_handler(int sig) {
