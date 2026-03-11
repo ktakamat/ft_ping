@@ -10,48 +10,38 @@
 #                                                                              #
 # **************************************************************************** #
 
+NAME = ft_ping
+SRCS = main.c\
+        check.c\
+        icmp.c\
+        init.c\
+        print.c\
+        rtts.c\
 
-NAME        = ft_ping
-CC          = cc
-CFLAGS      = -Wall -Wextra -Werror -I./include -g -D_GNU_SOURCE
+HDRS = ft_ping.h
 
-# ソースディレクトリ
-SRC_DIR     = src
-OBJ_DIR     = obj
-LIBFT_DIR   = src/libft
+PATH_SRCS = src/
 
-# ソースファイル一覧
-# 修正: ft_calloc.c を追加し、使っていないファイルを削除しました
-SRCS        = $(SRC_DIR)/main.c \
-              $(SRC_DIR)/parser.c \
-              $(SRC_DIR)/socket.c \
-              $(SRC_DIR)/ping.c \
-              $(SRC_DIR)/packets.c \
-              $(SRC_DIR)/logger.c \
-              $(SRC_DIR)/verbose.c \
-              $(LIBFT_DIR)/ft_free.c \
-              $(LIBFT_DIR)/ft_strf.c \
-              $(LIBFT_DIR)/ft_calloc.c
+OBJS =	$(SRCS:.c=.o)
 
-# オブジェクトファイル生成 (src/libft/xxx.c -> obj/libft/xxx.o に対応)
-OBJS        = $(SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+CC = gcc
 
-all: $(NAME)
+FLAGS =	-Wall -Werror -Wextra
 
-$(NAME): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -lm -o $(NAME)
+all : $(NAME)
 
-# ディレクトリ構造を維持してコンパイル
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -c $< -o $@
+$(NAME) : $(addprefix $(PATH_SRCS), $(OBJS))
+			$(CC) -o $(NAME) $(addprefix $(PATH_SRCS), $(OBJS)) $(FLAGS) -lm
+			@echo "ft_ping is ready";
 
-clean:
-	rm -rf $(OBJ_DIR)
+clean : rm -rf $(addprefix $(PATH_SRCS), $(OBJS))
 
-fclean: clean
-	rm -f $(NAME)
+fclean : clean
+			rm -rf $(NAME)
 
-re: fclean all
+re : fclean all
 
-.PHONY: all clean fclean re
+.PHONY : all clean fclean re
+
+%.o : %.c $(addprefix $(PATH_SRCS), $(HDRS))
+				$(CC) $(FLAGS) -o $@ -c $<
