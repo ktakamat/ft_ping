@@ -19,11 +19,6 @@
 #include <math.h>
 #include <sys/time.h>
 
-// 時間の引き算
-// icmp.cでパケットのデータ部分に埋め込んだタイムスタン部を覚えている？
-// 送信時:パケットの中に「送った時刻」を取得する
-// 受信時:この関数が呼ばれ、gettimeofdayで「今届いた時刻」を取得する
-// timersu:便利なマクロを使って、届いた時刻ー送った時刻を計算し、その結果(RTT)をnew_rtt->valに保存する
 static int calc_packet_rtt(struct icmphdr *icmph, struct rtt_node *new_rtt)
 {
 	struct timeval *t_send;
@@ -38,11 +33,6 @@ static int calc_packet_rtt(struct icmphdr *icmph, struct rtt_node *new_rtt)
 	return 0;
 }
 
-// 連結リストへの保存
-// 計算したRTTをメモリに保存する
-// ・malloc:新しいノード(rtt_node)を作成する
-// ・末尾に追加:リストの最後までポンタを進めて、新しいノードを繋げる
-// ・これにより、100回pingを打てば100個のRTTデータが数珠繋ぎに保存される
 struct rtt_node * rtts_save_new(struct packinfo *pi, struct icmphdr *icmph)
 {
 	struct rtt_node *elem = pi->rtt_list;
@@ -76,10 +66,6 @@ void rtts_clean(struct packinfo *pi)
 	}
 }
 
-// 標準偏差/mdev
-// pingの統計で最後にでてくるstddev（またはmdev)は、「パケットごとの時間のバラツキ」を表す。
-// ・各パケットのRTTと平均値の差を二乗し、その平均の平方根(sqrt)を取る
-// ・これにより、ネットワークが安定している(バラツキが少ない)か、不安定(ラグが激しい)かを数値化できる
 void calc_stddev(struct packinfo *pi, long nb_elem)
 {
 	struct rtt_node *elem = pi->rtt_list;
@@ -109,10 +95,6 @@ void calc_stddev(struct packinfo *pi, long nb_elem)
 	}
 }
 
-// 統計の計算
-// プログラム終了直前に呼ばれ、蓄積した全データから統計を割り出す
-// min/max:リストを走査して、最も小さい時間と大きい時間を特定する
-// avg:全て秒(tv_sec)とマイクロ秒(tv_usec)を足し合わせ、最後に要素数で割る。
 void rtts_calc_stats(struct packinfo *pi)
 {
 	struct rtt_node *elem = pi->rtt_list;
@@ -141,4 +123,3 @@ void rtts_calc_stats(struct packinfo *pi)
 	pi->avg.tv_usec = total_usec / nb_elem;
 	calc_stddev(pi, nb_elem);
 }
-

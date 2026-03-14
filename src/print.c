@@ -21,10 +21,6 @@
 #include <netinet/ip_icmp.h>
 #include <arpa/inet.h>
 
-
-// ft_pingのユーザーインターフェース(画面への文字出力)を全て担当する。
-
-// -hオプションで表示されるヘルプテキスト
 void print_help()
 {
 	printf("Usage: ping [OPTION...] HOST ...\n"
@@ -35,14 +31,12 @@ void print_help()
 	       "  -v                 Verbose output\n");
 }
 
-// 実行時の一行目
-// プログラム起動直後、最初に表示されるPING google.com (142.250 ...): 56 data bytes というお決まりの文章を出力
-// -v(verbose)オプションが付いている場合は、パケットの識別子(自身のPID:PIDはOSが各プログラムを区別するためにつけたID)を16新数と10新数で追加表示する。
-// 例:10進数`12345`は16進数で`0x3039`
-void print_start_info(const struct sockinfo *si, const struct options *opts) {
-	int	pid;
+void print_start_info(const struct sockinfo *si, const struct options *opts)
+{
+	int pid;
 
-	printf("PING %s (%s): %d data bytes", si->host, si->str_sin_addr, ICMP_BODY_SIZE):
+	printf("PING %s (%s): %d data bytes", si->host, si->str_sin_addr,
+	       ICMP_BODY_SIZE);
 	if (opts->verb) {
 		pid = getpid();
 		printf(", id 0x%04x = %d", pid, pid);
@@ -50,8 +44,6 @@ void print_start_info(const struct sockinfo *si, const struct options *opts) {
 	printf("\n");
 }
 
-// pingは単に「到達した・しない」だけでなく、「なぜ到達しなかっか（ルータが経路をしらない、ポートが閉じている等）」をICMPエラーメッセージとして受け取る
-// print_icmp_err:受信したパケットのTypeとCodeを解析し、膨大なswitch文で具体的なエラー理由を表示する
 static void print_icmp_err(int type, int code) {
 	switch (type) {
 	case ICMP_DEST_UNREACH:
@@ -134,9 +126,19 @@ static void print_icmp_err(int type, int code) {
 	}
 }
 
-// print_icmp_err_body:詳細モード(-v)のとき、エラーを返してきたルーターやホストが「お前の送ってきたこのパケットがおかしいぞ」
-// と証拠として添付してきた元のパケットのヘッダー情報をバイナリダンプのように綺麗に整形して表示する
-static void print_err_icmp_body(uint8_t *buf) {
+static void print_icmp_rtt(const struct timeval *rtt)
+{
+	long msec;
+	long usec;
+
+	msec = rtt->tv_sec * 1000 + rtt->tv_usec / 1000;
+	usec = rtt->tv_usec % 1000;
+	usec %= 1000;
+	printf("%ld,%03ld", msec, usec);
+}
+
+static void print_err_icmp_body(uint8_t *buf)
+{
 	struct iphdr *ipb = skip_icmphdr((struct icmphdr *)buf);
 	struct icmphdr *icmpb = skip_iphdr(ipb);
 	uint8_t *bytes = (uint8_t *)ipb;
@@ -163,25 +165,9 @@ static void print_err_icmp_body(uint8_t *buf) {
 	       icmpb->un.echo.id, icmpb->un.echo.sequence);
 }
 
-// ミリ秒のフォーマット
-// timeval構造体(鋲とマイクロ秒)を、ミリ秒単位(例:14.053ms)に変換して出力する
-// 気になった点:inetutilsのpingは通常、小数点は.(ドット)を使いますが、ここでは,(カンマ)がつかわる
-// またusec %= 1000;が2回連続しているのはタイポと思われる
-static void print_icmp_rtt(const struct timeval *rtt) {
-    long msec;
-    long usec;
-
-    msec = rtt->tv_sec * 1000 + rtt->tv_usec / 1000;
-    usec = rtt->tv_usec % 1000;
-    usec %= 1000;
-    printf("%ld,%03ld", msec, usec);
-}
-
-// パケット受信ごとの出力
-// 1秒ごとのループの中で、パケットを受信するたびに呼ばれる
-// 正常時(Type == 0 / ICMP_ECHOREPLY): -q (静音) モードでなければ、64 bytes from 142.250...: icmp_seq=1 ttl=116 time=14.5 ms のようなお馴染みの行を出力する
-// エラー時(Type != 0): 受信したICMPエラーメッセージのTypeとCodeを解析し、print_icmp_errでエラー理由を表示する。さらに-v(詳細)モードなら、print_err_icmp_bodyでエラーの証拠となる元のパケットのヘッダ情報も表示する
-int print_recv_info(void *buf, size_t nb_bytes, const struct options *opts, const struct packinfo *pi) {
+int print_recv_info(void *buf, ssize_t nb_bytes, const struct options *opts,
+                    const struct packinfo *pi)
+{
 	char addr[INET_ADDRSTRLEN] = {};
 	struct iphdr *iph = buf;
 	struct icmphdr *icmph = skip_iphdr(iph);
@@ -202,16 +188,13 @@ int print_recv_info(void *buf, size_t nb_bytes, const struct options *opts, cons
 	return 0;
 }
 
-// calc_packet_loss:pingの最後に表示される統計情報の中で、送信したパケットのうち、何%が返信を受け取れなかったかを計算する関数
-static inline float calc_packet_loss(const struct packinfo *pi) {
+static inline float calc_packet_loss(const struct packinfo *pi)
+{
 	return (1.0 - (float)(pi->nb_ok) / (float)pi->nb_send) * 100.0;
 }
 
-// 終了時の統計情報
-// Ctrl + Cでループを抜けた後に呼ばれる
-// 送信数と受信数からパケットロス率を計算し、rtts_calc_statsを呼んで計算したRTTの最小・平均・最大・標準偏差
-// をスラッシュ区切り(min/avg/max/stddev)で出力する
-void print_end_info(const struct sockinfo *si, struct packinfo *pi) {
+void print_end_info(const struct sockinfo *si, struct packinfo *pi)
+{
 	printf("\n--- %s ping statistics ---\n", si->host);
 	printf("%d packets transmitted, %d packets received, "
 	       "%d%% packet loss\n", pi->nb_send, pi->nb_ok,
@@ -229,5 +212,3 @@ void print_end_info(const struct sockinfo *si, struct packinfo *pi) {
 		printf(" ms\n");
 	}
 }
-
-
