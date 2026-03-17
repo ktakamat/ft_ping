@@ -10,38 +10,34 @@
 #                                                                              #
 # **************************************************************************** #
 
-NAME = ft_ping
-SRCS = main.c\
-        check.c\
-        icmp.c\
-        init.c\
-        print.c\
-        rtts.c\
+NAME        = ft_ping
+CC          = gcc
+FLAGS       = -Wall -Werror -Wextra
+LIBS        = -lm
 
-HDRS = ft_ping.h
+PATH_SRCS   = src/
+SRCS_FILES  = main.c check.c icmp.c init.c print.c rtts.c
+HDRS        = ft_ping.h
 
-PATH_SRCS = src/
+SRCS        = $(addprefix $(PATH_SRCS), $(SRCS_FILES))
 
-OBJS =	$(SRCS:.c=.o)
-
-CC = gcc
-
-FLAGS =	-Wall -Werror -Wextra
+OBJS        = $(SRCS:.c=.o)
 
 all : $(NAME)
 
-$(NAME) : $(addprefix $(PATH_SRCS), $(OBJS))
-			$(CC) -o $(NAME) $(addprefix $(PATH_SRCS), $(OBJS)) $(FLAGS) -lm
-			@echo "ft_ping is ready";
+$(NAME) : $(OBJS)
+	$(CC) $(FLAGS) -o $(NAME) $(OBJS) $(LIBS)
+	@echo "ft_ping is ready"
 
-clean : rm -rf $(addprefix $(PATH_SRCS), $(OBJS))
+$(PATH_SRCS)%.o : $(PATH_SRCS)%.c $(PATH_SRCS)$(HDRS)
+	$(CC) $(FLAGS) -c $< -o $@
+
+clean :
+	rm -rf $(OBJS)
 
 fclean : clean
-			rm -rf $(NAME)
+	rm -rf $(NAME)
 
 re : fclean all
 
 .PHONY : all clean fclean re
-
-%.o : %.c $(addprefix $(PATH_SRCS), $(HDRS))
-				$(CC) $(FLAGS) -o $@ -c $<
