@@ -1,0 +1,26 @@
+有効なホスト名 (Google)
+sudo ./ft_ping google.com
+
+有効なIPアドレス (Cloudflare)
+sudo ./ft_ping 1.1.1.1
+
+存在しないIPアドレス (タイムアウトの確認)
+sudo ./ft_ping 192.0.2.1
+
+存在しないホストに対して詳細モードで実行
+sudo ./ft_ping -v non-existent.address.42
+
+TTLを1にして強制的にエラー(Time Exceeded)を発生させる
+sudo ./ft_ping -v -t 1 google.com
+
+ヘルプ表示
+sudo ./ft_ping -?
+
+不正なオプション
+sudo ./ft_ping -z google.com
+
+引数なし
+sudo ./ft_ping
+
+メモリリークとエラーの最終確認(数回パケットが飛んだら CTRL+C)
+sudo valgrind --leak-check=full --show-leak-kinds=all ./ft_ping google.com

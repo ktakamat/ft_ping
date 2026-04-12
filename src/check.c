@@ -48,6 +48,8 @@ static int parse_opt_arg(char *arg, struct options *opts)
 			default:
 				printf("ping: unknown option\n");
 			}
+		} else if (arg[i] == '?') {
+			opts->help = 1;
 		} else {
 			printf("ft_ping: invalid option -- '%c'\n", arg[i]);
 			printf("Try 'ft_ping -h' for more information.\n");
