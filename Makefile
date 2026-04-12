@@ -12,13 +12,13 @@
 
 NAME        = ft_ping
 CC          = gcc
-FLAGS       = -Wall -Werror -Wextra
+CFLAGS      = -Wall -Werror -Wextra
 LIBS        = -lm
+RM          = rm -f
 
 PATH_SRCS   = src/
+HDRS        = $(PATH_SRCS)ft_ping.h
 SRCS_FILES  = main.c check.c icmp.c init.c print.c rtts.c
-HDRS        = ft_ping.h
-
 SRCS        = $(addprefix $(PATH_SRCS), $(SRCS_FILES))
 
 OBJS        = $(SRCS:.c=.o)
@@ -26,17 +26,21 @@ OBJS        = $(SRCS:.c=.o)
 all : $(NAME)
 
 $(NAME) : $(OBJS)
-	$(CC) $(FLAGS) -o $(NAME) $(OBJS) $(LIBS)
-	@echo "ft_ping is ready"
+	@echo "$(YELLOW)Linking $(NAME)...$(RESET)"
+	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(LIBS)
+	@echo "$(GREEN)Done! $(NAME) is ready to ping.$(RESET)"
 
-$(PATH_SRCS)%.o : $(PATH_SRCS)%.c $(PATH_SRCS)$(HDRS)
-	$(CC) $(FLAGS) -c $< -o $@
+%.o : %.c $(HDRS)
+	@echo "$(YELLOW)Compiling $<...$(RESET)"
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean :
-	rm -rf $(OBJS)
+	@echo "$(YELLOW)Cleaning objects...$(RESET)"
+	$(RM) $(OBJS)
 
 fclean : clean
-	rm -rf $(NAME)
+	@echo "$(YELLOW)Full cleaning...$(RESET)"
+	$(RM) $(NAME)
 
 re : fclean all
 
