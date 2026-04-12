@@ -26,20 +26,15 @@ OBJS        = $(SRCS:.c=.o)
 all : $(NAME)
 
 $(NAME) : $(OBJS)
-	@echo "$(YELLOW)Linking $(NAME)...$(RESET)"
 	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(LIBS)
-	@echo "$(GREEN)Done! $(NAME) is ready to ping.$(RESET)"
 
 %.o : %.c $(HDRS)
-	@echo "$(YELLOW)Compiling $<...$(RESET)"
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean :
-	@echo "$(YELLOW)Cleaning objects...$(RESET)"
 	$(RM) $(OBJS)
 
 fclean : clean
-	@echo "$(YELLOW)Full cleaning...$(RESET)"
 	$(RM) $(NAME)
 
 re : fclean all
